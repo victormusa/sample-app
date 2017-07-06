@@ -75,13 +75,14 @@
   #   apt-get install -y apache2
   # SHELL
 
+#first i will run the alarm check script so we know in our email exactly when server is up
 
+system('sudo nohup ./alarmifdown.sh &')
+
+# Here i start all configuration for the 3 vms
 Vagrant.configure(2) do |config|
-#config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-#config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-#config.vm.synced_folder ".", "/home/vagrant", type: "nfs"
 config.vm.synced_folder ".", "/vagrant", type: "rsync"
-config.vm.define :nginx do |nginx_config|
+	config.vm.define :nginx do |nginx_config|
 	nginx_config.vm.box = "debian/jessie64"
 	nginx_config.vm.host_name = "nginx.devops.com"
 	nginx_config.vm.network "private_network", ip:"10.127.0.10"
@@ -91,7 +92,17 @@ config.vm.define :nginx do |nginx_config|
 		end
 	nginx_config.vm.provision "shell", path: "nginxinstall.sh", args: ENV['SHELL_ARGS']
 	end
-
+    config.vm.define :redis do |redis_config|
+	redis_config.vm.box = "debian/jessie64"
+ 	redis_config.vm.host_name = "redis.devops.com"
+	redis_config.vm.network "private_network", ip:"10.127.0.30"
+	redis_config.vm.box_check_update = false
+  	redis_config.vm.provider :virtualbox do |vb|
+		vb.memory = 256
+		vb.cpus = 1
+		end
+	redis_config.vm.provision :shell, :path => "redisinstall.sh"
+	end
 config.vm.define :php do |php_config|
     	php_config.vm.box = "debian/jessie64"
     	php_config.vm.host_name = "php.devops.com"
@@ -101,25 +112,6 @@ config.vm.define :php do |php_config|
 		vb.memory = 1024
         	vb.cpus = 1
 		end
-	php_config.vm.provision "shell", path: "php-fpminstall.sh", args: ENV['SHELL_ARGS']
-		
+	php_config.vm.provision "shell", path: "php-fpminstall.sh", args: ENV['SHELL_ARGS']		
 	end
-
-    config.vm.define :redis do |redis_config|
-	redis_config.vm.box = "debian/jessie64"
- 	redis_config.vm.host_name = "redis.devops.com"
-	redis_config.vm.network "private_network", ip:"10.127.0.30"
-	redis_config.vm.box_check_update = false
-	#redis_config.vm.provision "shell", path: "redisinstall.sh"
-  	redis_config.vm.provider :virtualbox do |vb|
-		vb.memory = 256
-	       vb.cpus = 1
-		end
-#	redis_config.vm.provision "shell" do |s|
-#	    s.path "redisinstall.sh"
- 	#redis_config.vm.provision "provisioner2", type: "shell", inline: "echo two"
-	redis_config.vm.provision :shell, :path => "redisinstall.sh"
-	
-	#config.vm.provision "shell", inline: "redisinstall.sh", args: ENV['SHELL_ARGS']	 
-		end
 end
