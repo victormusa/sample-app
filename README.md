@@ -7,4 +7,6 @@
 
 # Also theres a script called "1erejercicio.sh" that is a tool to get a "A" registry from domain and then check with that data # against an ip address or domain
 
+# For next version we will start using variables so you can input the ipaddresses or hostname for example 
+
 # Thanks for your attention and Enjoy
